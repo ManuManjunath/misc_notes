@@ -1,0 +1,7 @@
+To copy GitHub repository to enterprise git - 
+
+1) Create empty repo in Git enterprise.
+2) git clone git@githib.com:organization/repository.git --bare
+3) cd repository.git
+4) git remote add enterprise git@git.enterprise.com:organization/repository.git
+5) git push enterprise --mirror
