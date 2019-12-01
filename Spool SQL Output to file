@@ -1,0 +1,16 @@
+export ORACLE_HOME=/path/oracle/product/11.2.0.4.CL
+export ORACLE_BIN=${ORACLE_HOME}/bin
+export PATH=$PATH:${ORACLE_BIN}
+sqlplus -s ${DBUSER}/${DBUSERPASSWORD}@${DB}<<EOS
+set feedback off;
+set heading off;
+set trimspool on;
+set newpage none;
+set wrap off;
+set termout off;
+set sqlblanklines on;
+spool /path/to/output/file.txt
+@/path/to/script.sql
+spool off;
+exit;
+EOS
