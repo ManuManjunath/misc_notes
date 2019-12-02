@@ -1,3 +1,3 @@
 # Scripts
 
-Saving some personal scripts for reference
+Saving some generic scripts for reference
