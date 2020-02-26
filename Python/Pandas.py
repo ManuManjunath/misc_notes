@@ -26,8 +26,6 @@ columns : dict like {column -> {index -> value}}
 values : just the values array
 """
 
-
-
 # To see the number of rows and columns
 df.shape
 # To see the top 5 rows
@@ -52,6 +50,8 @@ df.describe()
 df.drop(['col_1', 'col_2'], axis=1)
 # To rename columns
 df.rename(columns={'col_1': 'column_1', 'col_2': 'column_2'})
+# To rename column
+df = df.assign('col_2'='col_1')
 # select col_1
 df.col_1 """ or """ df['col_1']
 # select col_1, col_2
@@ -60,15 +60,37 @@ df[['col_1', 'col_2']]
 df['col_1'].mean()
 # select max(col_1)
 df['col_1'].max()
-   
+# select count(distinct col_01)
+len(pd.unique(df2['col_01']))
+# multiply 2 columns
+df['col_1'] * df['col_2']
+# If column is identified as object (not number), try using - 
+pd.to_numeic(df['col_1'], errors='coerce')
+# coerce --> To ignore errors
+    
 # Filters
 # select * from df where col_1 > 100
 df[df.col_1 > 100]
 # Get row with max col_1
 df[df.col_1 == df['col_1'].max()]
+# select count(col_1) where col_1 = 'this'
+df['two'].value_counts()['this']
+# select count(col_2) where col_1 = 'this'
+df2 = df[df['col_1'] == 'this']
+df2['col_2'].value_counts()
 
 # Joins
-   
+
+# Index
+df.loc[row_index, col_index]
+# row_index is by default --> 0, 1, 2, ..
+# To specify a particular column as Index:
+df = read_csv("this_file.csv", index='this_column')
+# col_index is the column name
+# If column_index = ":" --> Get all columns
+df.iloc[10:10, [0,3]]
+# Gets rows 10 to 20 and columns # 1 and 4
+
 # Graphs
 # bar graph with counts by col_1
 pd.value_counts(df['col_1']).plot.bar()
