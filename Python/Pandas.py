@@ -79,6 +79,8 @@ df['two'].value_counts()['this']
 df2 = df[df['col_1'] == 'this']
 df2['col_2'].value_counts()
 
+# Groups
+
 # Joins
 
 # Index
