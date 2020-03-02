@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 
 # Creating dataframes
+# Create empty dataframe
+df2 = pd.DataFrame(columns=['one', 'two', 'three'])
+# Append rows to df2
+df2 = df2.append({'one': 'this', 'two': 'that', 'three': 'something else'}, ignore_index=True)
 # from CSV - 
 df = pd.read_csv("your_file.csv")
 # from SQL
