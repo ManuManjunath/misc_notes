@@ -84,6 +84,10 @@ df2 = df[df['col_1'] == 'this']
 df2['col_2'].value_counts()
 
 # Groups
+# select sum(numerical columns) from df group by col_1
+df.groupby(['col_1']).sum()
+# select sum(numerical columns) from df group by col_1, col_2
+df.groupby(['col_1', 'col_2']).sum()
 
 # Joins
 # Inner Join
