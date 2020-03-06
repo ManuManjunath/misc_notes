@@ -1,0 +1,58 @@
+# Steps to install Streamsets
+# References - 
+#https://streamsets.com/documentation/datacollector/latest/help/datacollector/UserGuide/Installation/FullInstall_ServiceStart.html
+# https://www.youtube.com/watch?v=fLjTkbc5vZ8
+
+edit the below file - 
+/etc/security/limits.conf
+add the below 2 lines - 
+*    hard    nofile    33000
+*    soft    nofile    33000
+
+# install wget, if not present already
+yum install wget
+
+# Download streamsets
+wget https://s3-us-west-2.amazonaws.com/archives.streamsets.com/datacollector/3.11.0/rpm/el7/streamsets-datacollector-3.11.0-el7-all-rpms.tar
+tar xf streamsets-datacollector-3.11.0-el7-all-rpms.tar
+yum localinstall streamsets-datacollector-3.11.0-el7-all-rpms/*.rpm
+service sdc start
+
+export SDC_HOME=/opt/streamsets-datacollector
+export SDC_CONF=/etc/sdc
+export MAPR_MEP_VERSION=4
+$SDC_HOME/bin/streamsets setup-mapr
+
+# Restart service
+service sdc stop
+service sdc start
+
+# To add user - 
+echo -n <text> | md5sum
+
+# Add to sdc - 
+vi /etc/sdc/form-realm.properties
+add the below - 
+user_name: MD5:<md5 password>,user,admin
+User: user_name
+Password: <text>
+
+# Enable port
+yum whatprovides */netstat
+sudo yum install net-tools
+
+netstat -an | grep 18630
+tcp6       0      0 :::18630                :::*                    LISTEN
+^^ Listening
+
+lsof -i:18630
+COMMAND   PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+java    15692  sdc 6545u  IPv6  57803      0t0  TCP *:18630 (LISTEN)
+
+iptables -I INPUT 1 -p tcp --dport 18630 -j ACCEPT
+
+# Restart service
+service sdc restart
+
+# Validate here -
+http://yourserver:18630/
