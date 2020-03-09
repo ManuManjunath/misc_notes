@@ -1,0 +1,24 @@
+# Python virtual environment
+
+# Set parameters
+date=$(date '+%Y-%m-%d')
+Python3Dir=/usr/local/python3-tgt-201901/bin
+VirtEnvDir=/home_dir/your_user/Environments
+WrkDir=/home_dir/your_user/working_dir
+
+# Create Virtual Env
+$Python3Dir/virtualenv $VirtEnvDir/Project
+# Activate virtual environment
+source $VirtEnvDir/Project/bin/activate
+# or
+. $VirtEnvDir/Project/bin/activate
+
+# Install requirements
+pip install -r $WrkDir/requirements.txt
+
+# Run your Python code
+python3.7 $WrkDir/Python_code.py
+# Deactivate virtual env once you're done with your work
+deactivate
+
+# Python 3.3> comes with venv
