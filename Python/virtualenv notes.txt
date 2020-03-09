@@ -1,5 +1,6 @@
 # Python virtual environment
-
+########################################################################
+# Sample 
 # Set parameters
 date=$(date '+%Y-%m-%d')
 Python3Dir=/usr/local/python3-tgt-201901/bin
@@ -20,5 +21,13 @@ pip install -r $WrkDir/requirements.txt
 python3.7 $WrkDir/Python_code.py
 # Deactivate virtual env once you're done with your work
 deactivate
+########################################################################
 
 # Python 3.3> comes with venv
+
+
+
+# Requirements 
+astropy=3.2.1 --> Version must be 3.2.1
+astropy>=3.2.1 --> Version atleast 3.2.1
+astropy!=3.2.1 --> Version other than 3.2.1
