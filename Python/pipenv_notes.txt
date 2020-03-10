@@ -1,0 +1,25 @@
+# To install
+pip3 install pipenv
+# To launch
+pipenv shell
+# To install a package
+pipenv install requests
+# ^^ installs flask in the pipenv and adds it to the Pipfile under [packages]
+# ^^ Creates a Pipfile and Pipfile.lock
+# To check the local packages - 
+pipenv lock -r
+# To uninstall - 
+pipenv uninstall requests
+# To install a dev package - 
+pipenv install requests --dev
+# To install packages from requirements.txt
+pipenv install -r requirements.txt
+# ^^ Updates Pipfile and Pipfile.lock
+# To see the package dependency tree - 
+pipenv graph
+# To run a command in pipenv
+pipenv run your_command
+# To run python code in pipenv - 
+pipenv run python3 your_code.py
+# To exit
+exit
