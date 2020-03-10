@@ -1,0 +1,20 @@
+# download kafka -
+wget http://mirrors.estointernet.in/apache/kafka/2.4.0/kafka_2.12-2.4.0.tgz
+tar -xzf kafka_2.12-2.4.0.tgz
+cd kafka_2.12-2.4.0
+# Start zookeeper
+bin/zookeeper-server-start.sh config/zookeeper.properties
+# Start Kafka server
+bin/kafka-server-start.sh config/server.properties
+# Create a topic
+bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic test
+# Validate -
+bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+# Send messages
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
+>one two ka four
+>four two ka one
+# Start consumer -
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning
+one two ka four
+four two ka one
