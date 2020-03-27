@@ -1,7 +1,7 @@
 """
 This may not be the ideal solution and might be lengthier than necessary.
 However, I tried to code it in a way I personally think when solving Sudoku puzzles.
-FYI - I cannot really solve expert level puzzles.
+FYI - I cannot really solve super expert level puzzles.
 I've listed my thought process below and tried to code it in a manner that I would solve manually.
 
 1) Input board
@@ -10,16 +10,15 @@ I've listed my thought process below and tried to code it in a manner that I wou
 3) Simple check - Check if any row / column / sub-grid is missing a single cell
     - Fill it up
 4) Repeat step #3 until you cannot solve anymore.
-5) Analyze the combination of (row, column, sub-grid) and check if its missing a single cell.
-    - Fill it up
+5) Analyze the combination of (row, column, sub-grid) for empty cells.
+    - If its one possible value, fill it up
 6) Loop #5 until you cannot solve anymore.
 7) Now stuck - a block can have 2 possible values?
     a) Enter one of the 2 possibilities
-    b) Do steps #5, #6, #7
-    c) Do step #9
-    d) Found an error?
-    e) Change the number entered in #11-a
-    f) Do steps #11-b, #11-c
+    b) Do steps #3, #4, #5
+    c) Found an error?
+    d) Change the number entered in #7-a
+    f) Do step #7-b
 8) Break - Stop code if > 100 steps are performed.
     - This is a placeholder to validate code.
 9) If 2 empty cells can be one of 2 values, ignore these 2 values as possibilities for other empty cells.
