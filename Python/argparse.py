@@ -28,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--x', type=float, default=1.0, help='Enter the 1st number')
     parser.add_argument('--y', type=float, default=1.0, help='Enter the 2nd number')
     parser.add_argument('--operation', type=str, default='Add', help='Add/Subtract/Multiply/Divide')
+    # nargs
     args = parser.parse_args()
     sys.stdout.write(str(calc(args)))
     
