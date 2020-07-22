@@ -65,4 +65,36 @@ fun main() {
     println("Is 2 less than 3? ${2 < 3}")
     // This way, you can directly perform calculations in the print statement
     
+    // Nullables
+    var name :String = "Manu"
+    // name = null --> Compilation error. Null cannot be a value of non-null type string
+    var nullableName : String? = "Manu"
+    nullableName = null
+    println(nullableName)
+    // To use nullable variables, use "?" -
+    var len = nullableName?.length
+    println(len)
+    // Elvis Operator
+    // To assign a nullable value to a non nullable variable -
+    nullableName = null
+    name = nullableName ?: "Guest"
+    // This means, if the nullable value is null, it'll use the default "Guest".
+    // If not, it'll use the value from the nullable variable.
+    println(name)
+
+    // Basic function
+    myFun()
+
+    // Function With parameters
+    var a = withParms(2, 4)
+    println(a)
+
+}
+
+fun myFun() {
+    println("I'm inside myFun")
+}
+
+fun withParms(a: Int, b: Int) : Int{
+    return a + b
 }
