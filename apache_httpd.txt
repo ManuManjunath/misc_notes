@@ -1,0 +1,22 @@
+Apache HTTP server -
+https://www.youtube.com/watch?v=rCr3-YlL5S8
+
+ * To check status -
+systemctl status / start / stop / restart / reload httpd
+netstat -tupan | grep -i 8080
+netstat -tupan | grep -i http
+httpd -t
+httpd -v
+ps aux | grep -i http
+ * Conf files
+/etc/httpd/conf/httpd.conf
+/etc/httpd/conf.d/*.conf
+ * Log files
+/var/log/httpd/*
+ * PID file
+/vat/run/httpd/httpd.pid
+ * Startup script
+/usr/lib/systemd/system/httpd.service
+or /etc/init.d/httpd
+
+
