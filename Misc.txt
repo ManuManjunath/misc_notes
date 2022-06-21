@@ -27,3 +27,6 @@ Double shift --> Search anywhere (Search for files, Classes, Variables, etc
 Command + click --> Go to source Class/Method
 Command + b --> Usages of a variable
 Option + Command + T --> Surround code inside (if / try/catch / {})
+
+To open slurm bash:
+srun --pty bash
