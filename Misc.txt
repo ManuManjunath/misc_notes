@@ -33,3 +33,8 @@ srun --pty bash
 
 To test hugo git pages formatting locally (run this from the repo home dir):
 hugo -D server 
+
+Influx -
+To see the tags and different tag values in a given measurement -
+"q=show tag keys from table"
+"q=show tag values from table with key = name"
