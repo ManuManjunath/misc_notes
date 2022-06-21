@@ -21,3 +21,9 @@ which npm
 which npx
 Create project -
 npx create-react-app <appname>
+
+IntelliJ:
+Double shift --> Search anywhere (Search for files, Classes, Variables, etc
+Command + click --> Go to source Class/Method
+Command + b --> Usages of a variable
+Option + Command + T --> Surround code inside (if / try/catch / {})
