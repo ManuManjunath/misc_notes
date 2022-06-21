@@ -12,3 +12,12 @@ Telegraf debug -
 telegraf --config-directory telegraf.d --test|grep -i "> exec" (run from /etc/telegraf)
 telegraf --config-directory telegraf.d --debug
 /var/log/telegraf/telegraf.log
+
+JS:
+install node js
+npm install npm@latest -g
+Validate
+which npm
+which npx
+Create project -
+npx create-react-app <appname>
