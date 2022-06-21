@@ -30,3 +30,6 @@ Option + Command + T --> Surround code inside (if / try/catch / {})
 
 To open slurm bash:
 srun --pty bash
+
+To test hugo git pages formatting locally (run this from the repo home dir):
+hugo -D server 
