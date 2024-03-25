@@ -20,3 +20,17 @@ docker -d busybox:1.24 sleep 100
 running in interactive mode
 docker -it busybox:1.24
 
+remove the container after its work
+docker --rm busybox:1.24 sleep 1
+
+To validate if its removed:
+docker ps -a
+
+creating a container with a specific name:
+docker run --name hello_world busybox:1.24
+
+To check if a new container is created:
+docer ps -a
+
+to get full details on a container:
+docker inspect <container_id>
