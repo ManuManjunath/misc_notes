@@ -1,0 +1,22 @@
+images list:
+docker images
+
+containers running:
+docker ps
+
+Other:
+docker info
+docker version
+
+download a new image:
+docker run busybox:1.24
+
+download with a command:
+docker run busybox:1.24 echo "hello world"
+
+running containers in background(detach mode)
+docker -d busybox:1.24 sleep 100
+
+running in interactive mode
+docker -it busybox:1.24
+
