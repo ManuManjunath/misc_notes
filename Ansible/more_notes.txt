@@ -1,0 +1,73 @@
+Built on Python
+Playbooks are written in .yml
+Connects to hosts using SSH
+Inventory - Hosts, Groups, Roles, User accounts
+Playbook - Has individual plays in a predefined order
+Modules - Set of actions, has core modules and extra modules
+Ansible Config - Sets global config variables
+Variables - Host variables, Fact variables, Dynamic variables
+Host Variables - Defined in Inventory per host or Group
+Fact Variables - Fact data gathered from remote host
+Dynamic Variables - Created by tasks at runtime
+Ansible creates a Python package with the modules
+Runs the package on the hosts in a temp directory
+Python runs on the remote server and sends back a json to  ansible to report status
+Package on the temp directory then gets deleted before closing the SSH connection
+Remote exec type - package gets deployed & extecuted on remote system
+Local exec type - If remote machine cannot receive a Python module
+
+If a host fails a particular execution, it gets added to a retry file
+
+Get roles in galaxy.ansible.com
+
+To install role from Ansaible galaxy - 
+sudo ansible-galaxy install thisone.git
+
+Fetch - opposite of copy
+
+To get details about the host:
+ansible web1 -I inventory -m setup
+To filter for specific details
+ansible web1 -I inventory -a setup "filter=ansible_mounts"
+To get for all hosts:
+ansible all -I inventory -m setup --tree ./setup_details
+
+Playbooks - advanced
+include - To extend playbooks and refer another yml
+Also include variables from another file - 
+include_vars: variables.yml
+register - to store the results of one task - to pass to another
+
+
+Playbook handlers - they can do - 
+Run certain tasks only when notified
+Run certain tasks only after another task has completed
+Restart service IF a file is changed
+They're executed only once
+Notify handlers from the tasks - 
+tasks:
+  - copy: src=files/httpd.conf
+               dest=/etc/httpd/conf
+      notify:
+        - Apache Restart
+handlers:
+  - name: Apache Restart
+    service: namew=httpd state=restarted
+
+Conditional Clause
+tasks:
+  - yum: name=httpd state=present
+    when: ansible_os_family == "RedHat"
+  - apt: name=apache2 state=present
+    when: ansible_os_family == "Debian"
+
+Run if previous task succeeded
+Tracks if the previous task ran from the JSON results
+Status options - success, failure, skipped
+
+tasks:
+  - command: ls /path/doesn’t/exist
+    register: result
+    ignore_errors: yes
+  - debug: msg="Failure!"
+    when: result|failed

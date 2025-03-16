@@ -1,0 +1,9 @@
+Target pattern to identify hosts
+OR - (group1:group2)
+NOT - (!group1)
+AND - (group1:&group2) 
+    Note: AND is intersection of groups
+Regex - (~web[0-9]+)
+    Note: Sample - new_web01.example.com, old_web02.example.com
+Wildcard - (web*.example.com)
+    Note: Sample - web01.example.com / web02.example.com

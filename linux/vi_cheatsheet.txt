@@ -1,0 +1,31 @@
+Editing -
+i - Insert at cursor (goes into insert mode)
+a - Write after cursor (goes into insert mode)
+A - Write at the end of line (goes into insert mode)
+o - Open a new line (goes into insert mode)
+ESC - Leave insert mode
+x - Delete character at the cursor
+
+Navigation - 
+gg - move to the 1st line of the file
+$ - move to the end of the line
+2 shift+g - goes to the 5th line of the file
+
+k or up arrow - Move cursor up
+j or down arrow - Move cursor down
+h or left arrow - Move cursor left
+l or right arrow - Move cursor right
+
+Deleting - 
+dw - delete current word
+4dw - delete 4 words
+dd - delete entire line
+3dd - Delete 3 lines (Current line + next 2 lines)
+gg and dG - to empty a file
+
+Closing -
+:w - Save the file but keep it open
+:wq! - Save and close
+:q! - Close without saving
+
+:set number - To set line numbers
