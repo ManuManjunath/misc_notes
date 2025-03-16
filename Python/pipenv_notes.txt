@@ -1,0 +1,48 @@
+# To install
+pip3 install pipenv
+# To launch
+pipenv shell
+# To install a package
+pipenv install requests
+# ^^ installs flask in the pipenv and adds it to the Pipfile under [packages]
+# ^^ Creates a Pipfile and Pipfile.lock
+# To uninstall - 
+pipenv uninstall requests
+# To install a dev package - 
+pipenv install requests --dev
+# To install packages from requirements.txt
+pipenv install -r requirements.txt
+# ^^ Updates Pipfile and Pipfile.lock
+# To see the package dependency tree - 
+pipenv graph
+# To run a command in pipenv
+pipenv run your_command
+# To run python code in pipenv - 
+pipenv run python3 your_code.py
+# To see the local packages - in requirements.txt format
+pipenv lock -r
+# To recreate your environment using a different Python version - 
+Step 1) Change version in Pipfile under "[requires]" 
+Step 2) pipenv --python 3.6
+        or
+        pipenv --rm
+        <and>
+        pipenv install
+# To see th path to the virtual environment
+pipenv --venv
+# To check for security vulnerabilities
+pipenv check
+# To lock the dependent package versions for your project - 
+pipenv lock
+# To create env using Pipfile.lock instead of Pipfile
+pipenv install --ignore-pipfile
+# To create environment variables - 
+Create a ".env" file and add the below - 
+NEW_VARIABLE="This one"
+# To validate your environment variable - 
+pipenv run python
+>>> import os
+>>> os.environ['NEW_VARIABLE']
+'This one'
+# To exit
+exit

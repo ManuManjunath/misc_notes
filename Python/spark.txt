@@ -1,0 +1,293 @@
+from pyspark.sql import SparkSession
+import sys
+
+spark = SparkSession.builder.appName('Basics').getOrCreate()
+
+df = spark.read.json("/user/Z0019Z3/json_test/json.json")
+df.printSchema()
+
+# To view the entire data frame
+df.show()
+
+# To view all the columns
+# df.columns
+
+# To view high level stats of all numeric columns
+# df.describe().show()
+
+# To start a Spark Context - Obsolete
+sc
+
+from datetime import datetime
+from pyspark.sql.types import Row
+
+# To create an RDD using a list
+rdd1 = sc.parallelize([1, True, 'Manu', 3.12])
+
+# To view the number of elements
+print(rdd1.count())
+
+# To get the 1st element
+print(rdd1.first())
+
+# To take the first 2 elements
+print(rdd1.take(2))
+
+# To view all the elements
+print(rdd1.collect())
+
+# RDD with multiple records
+rdd2 = sc.parallelize([[1, True, 'Manu', 3.12], [2, False, 'John Doe', 1.5]])
+
+print(rdd2.first())
+# [1, True, 'Manu', 3.12]
+
+print(rdd2.count())
+# 2
+
+# Converting to data frame
+df2 = rdd2.toDF()
+print(df2)
+# DataFrame[_1: bigint, _2: boolean, _3: string, _4: double]
+# Spark infers data types
+df2.printSchema()
+
+# To view high level stats of all numerical columnsm, use describe
+df2.describe().show()
+
+
+from pyspark import SparkContext
+from pyspark.sql import SQLContext
+from pyspark import SparkConf
+from pyspark.sql import SparkSession
+import pyspark.sql.functions as F
+from pyspark.sql.functions import concat, col, lit
+from pyspark.sql.functions import from_json
+from pyspark.sql.functions import explode
+from pyspark.sql.types import *
+import pandas as pd
+from sys import argv
+
+spark = SparkSession.builder.master("local").appName("itemDataValidation").config("spark.some.config.option", True).getOrCreate()
+
+df_base = spark.read.parquet("hdfs://bigred3ns/user/Z003TNN/hive/item_data_extracted_raw")
+
+df_process = df_base.select(col("tcin"),
+                            col("dpci"),
+                            col("estore_item_status_code"),
+                            col("item_state"),
+                            col("item_type_name"),
+                            col("launch_date_time"),
+                            col("product_type_name"),
+                            col("product_sub_type_name"),
+                            col("bullets"))
+
+#print(type(df_process))
+
+df_filtered = df_process \
+.filter((F.col("item_state") == "READY_FOR_LAUNCH") | (F.col("item_state") == "READY_FOR_ORDER")) \
+.filter(F.col("estore_item_status_name") == "Active") \
+.filter(F.length(F.col("dpci")) > 0) \
+.filter(F.length(F.col("launch_date_time")) > 0) \
+.filter(F.col("launch_date_time") < F.unix_timestamp(F.lit('2022-04-30 00:00:00')).cast('timestamp'))
+
+df_processed = df_filtered.select(col("tcin"),
+                                col("item_type_name"),
+                                col("product_type_name"),
+                                col("product_sub_type_name"),
+                                col("bullets")).dropDuplicates()
+
+print((df_processed.count(), len(df_processed.columns)))
+df_processed.show()
+
+df_base.unpersist()
+df_process.unpersist()
+df_filtered.unpersist()
+
+#df_apparel = df_processed.filter(F.col("product_type_name") == "APPAREL")
+
+#data = []
+
+#for i in df_processed.collect():
+#    data.append(tuple(i))
+     
+#print((df_processed.count(), len(df_processed.columns)))
+#print(len(data))
+
+#spark.conf.set("spark.sql.execution.arrow.enabled", "true")
+print((df_processed.count(), len(df_processed.columns)))
+df_processed.show()
+#pd_df = df_processed.toPandas()
+
+df_apparel = df_processed.filter(F.col("product_type_name") == "APPAREL")
+df_electronics = df_processed.filter(F.col("product_type_name") == "ELECTRONICS")
+df_home = df_processed.filter(F.col("product_type_name") == "HOME")
+df_furniture = df_processed.filter(F.col("product_type_name") == "FURNITURE")
+df_garage_and_hardware = df_processed.filter(F.col("product_type_name") == "GARAGE & HARDWARE")
+df_patio_and_outdoor_decor = df_processed.filter(F.col("product_type_name") == "PATIO & OUTDOOR DECOR")
+
+print((df_apparel.count(), len(df_apparel.columns)))
+print((df_electronics.count(), len(df_electronics.columns)))
+print((df_home.count(), len(df_home.columns)))
+print((df_furniture.count(), len(df_furniture.columns)))
+print((df_garage_and_hardware.count(), len(df_garage_and_hardware.columns)))
+print((df_patio_and_outdoor_decor.count(), len(df_patio_and_outdoor_decor.columns)))
+
+print(df_apparel.select('product_type_name').distinct().collect())
+print(df_electronics.select('product_type_name').distinct().collect())
+print(df_home.select('product_type_name').distinct().collect())
+print(df_furniture.select('product_type_name').distinct().collect())
+print(df_garage_and_hardware.select('product_type_name').distinct().collect())
+print(df_patio_and_outdoor_decor.select('product_type_name').distinct().collect())
+
+
+import numpy as np
+
+def convertToPandasAndExplode(spark_df, catg):
+    pd_df = spark_df.toPandas()
+    print(spark_df.select('product_type_name').distinct().collect())
+    print(pd_df['product_type_name'].unique())
+    print(pd_df.dtypes)
+
+    data = pd_df.values.tolist()
+    # Validating counts
+    print(f"Validating Counts: {pd_df.shape[0]} = {len(data)}")
+
+    # Explode data by individual bullet attributes
+    start = '<B>'
+    end = ':</B>'
+    bulletsListByTcin = []
+    counter = 0
+    for i in data:
+        counter += 1
+        if counter % 25000 == 0:
+            print(f"Done with {counter} out of {pd_df.shape[0]}")
+        bullets_string = i[4]
+#       bullets_list = json.loads(bullets_string)
+        for attr in bullets_string:
+            bllt = attr[attr.find(start)+len(start):attr.rfind(end)]
+            bulletsListByTcin.append({"tcin": i[0],
+                            "item_type_name": i[1],
+                            "product_type_name": i[2],
+                            "product_sub_type_name": i[3],
+                            "bullet": bllt
+                           })
+    df_explode = pd.DataFrame(bulletsListByTcin)
+    print(df_explode.shape)
+    print(df_explode.dtypes)
+
+    df_tcinsByItemType = df_explode.groupby(['product_type_name',
+                                             'product_sub_type_name',
+                                             'item_type_name'])['tcin'].nunique().reset_index()
+
+    df_tcinsByBullets = df_explode.groupby(['product_type_name',
+                                            'product_sub_type_name',
+                                            'item_type_name',
+                                            'bullet'])['tcin'].nunique().reset_index()
+
+    df_tcinsByItemType = df_tcinsByItemType.rename(columns={'tcin':'tcinCountByItemType'})
+    df_tcinsByBullets = df_tcinsByBullets.rename(columns={'tcin':'tcinCountByBullet'})
+    df_withCounts = df_tcinsByBullets.merge(df_tcinsByItemType, how = 'inner', on=['product_type_name', 
+                                                                          'product_sub_type_name', 
+                                                                          'item_type_name'])
+    print(df_withCounts.shape)
+    print(df_withCounts.dtypes)
+
+    # Validation 
+    # Ensure counts by tcinCountByItemType is always greater than or equal to tcinCountByBullet
+    df_withCounts['validation'] = np.where((df_withCounts['tcinCountByBullet'] <= df_withCounts['tcinCountByItemType']), True, False)
+    print(set(df_withCounts['validation'].tolist()))
+    # Should show only True
+
+    df_withCounts['tcinsMissingBullet'] = df_withCounts['tcinCountByItemType'] - df_withCounts['tcinCountByBullet']
+
+    # Calculate Coverage metric
+    df_withCounts['coverage'] = round(df_withCounts['tcinCountByBullet'] / df_withCounts['tcinCountByItemType'] *100, 2)
+
+#    df_final = df_withCounts[
+#        (df_withCounts['coverage'] >= 30) &
+#        (df_withCounts['tcinCountByItemType'] >= 200) &
+#        ((df_withCounts['coverage'] <= 80) | (df_withCounts['tcinsMissingBullet'] >= 100))
+#    ]
+
+    df_withCounts.to_csv(f"/home_dir/z0019z3/forHackathon/{catg}.csv")
+    print(df_withCounts['product_type_name'].unique())
+
+#    print(df_withCounts.head())
+
+
+#convertToPandasAndExplode(df_garage_and_hardware, "garage_and_hardware")
+#convertToPandasAndExplode(df_patio_and_outdoor_decor, "patio_and_outdoor_decor")
+#convertToPandasAndExplode(df_furniture, "furniture")
+#convertToPandasAndExplode(df_home, "home")
+#convertToPandasAndExplode(df_apparel, "apparel")
+convertToPandasAndExplode(df_electronics, "electronics")
+
+
+import pyspark.sql.functions as F
+from pyspark.sql.types import *
+
+hdfs_path = "hdfs://bigred3ns/user/Z0019Z3/search/typeahead"
+afterTaProcessor = "ta_dictionary/part-00000-1eae4248-cc6f-4070-8a75-8a144ff9bbed-c000.csv"
+afterKeywordCurations = "curated_ta_dictionary/part-00000-3017b411-0dcb-4b04-a0ba-1232b7a93b15-c000.csv"
+afterCatgV2 = "ta_dictionary_category/part-00000-a4e5e86d-602f-4b30-a1e3-14f51c9f5cbe-c000.csv"
+temp = "curated_ta_dictionary_classify_temp/part-00000-dd5cd89f-637f-43f2-848e-372d39f14e49-c000.csv"
+main = "curated_ta_dictionary_classify/part-00000-db051c65-41fe-482d-94c0-ed97a325457c-c000.csv"
+
+hdfsAfterTaProcessor = f"{hdfs_path}/{afterTaProcessor}"
+hdfsAfterKeywordCurations = f"{hdfs_path}/{afterKeywordCurations}"
+hdfsAfterCatgV2 = f"{hdfs_path}/{afterCatgV2}"
+hdfsFinalTemp = f"{hdfs_path}/{temp}"
+hdfsFinalMain = f"{hdfs_path}/{main}"
+
+dfAfterTaProcessor = spark.read.option("sep", "\t").option("header", False).csv(hdfsAfterTaProcessor)
+dfAfterTaProcessor = dfAfterTaProcessor.withColumnRenamed("_c0", "query").withColumnRenamed("_c1", "score").withColumnRenamed("_c2", "normQueries").withColumnRenamed("_c3", "dictionaryName")
+dfAfterKeywordCurations = spark.read.option("sep", "\t").option("header", False).csv(hdfsAfterKeywordCurations)
+dfAfterKeywordCurations = dfAfterKeywordCurations.withColumnRenamed("_c0", "query").withColumnRenamed("_c1", "score").withColumnRenamed("_c2", "normQueries").withColumnRenamed("_c3", "dictionaryName")
+dfAfterCatgV2 = spark.read.option("sep", "\t").option("header", False).csv(hdfsAfterCatgV2)
+dfAfterCatgV2 = dfAfterCatgV2.withColumnRenamed("_c0", "query").withColumnRenamed("_c1", "score").withColumnRenamed("_c2", "categories").withColumnRenamed("_c3", "siteTaxoCatg").withColumnRenamed("_c4", "normQueries").withColumnRenamed("_c5", "dictionaryName")
+dfFinalTemp = spark.read.option("sep", "\t").option("header", True).csv(hdfsFinalTemp)
+dfFinalMain = spark.read.option("sep", "\t").option("header", True).csv(hdfsFinalMain)
+
+# qry = 'dress collaboration' # Old one (was excluding combined during keyword curations) - fine now
+# Sample app#||#web : pillow covers, womens jewelry, living room lamps, headphones with case
+qry = "headphones with case"
+
+print("After initial TA Processor")
+print(dfAfterTaProcessor.filter(dfAfterTaProcessor.query == qry).show(20, False))
+print("After keyword curations")
+print(dfAfterKeywordCurations.filter(dfAfterKeywordCurations.query == qry).show(20, False))
+print("After Catg V2 processor")
+print(dfAfterCatgV2.filter(dfAfterCatgV2.query == qry).select(F.col("query"), F.col("score"), F.col("categories"), F.col("dictionaryName")).show(20, False))
+print("Validation processor: Before concat")
+print(dfFinalTemp.filter(dfFinalTemp.query == qry).select(F.col("query"), F.col("score"), F.col("categories"), F.col("dictionaryName")).show(20, False))
+print("validation processor: After concat")
+print(dfFinalMain.filter(dfFinalMain.query == qry).select(F.col("query"), F.col("score"), F.col("categories"), F.col("channel")).show(20, False))
+
+print(dfFinalTemp.groupBy("dictionaryName").count().show(20, False))
+print(dfFinalMain.groupBy("channel").count().show(20, False))
+
+"""
+TypeaheadProcessor in 9662841 ms (2.6 hours)
+KeywordCurationsProcessor in 60499 ms (1 min)
+TypeaheadSitetaxoProcessor in 3945307 ms (1.2 hours)
+TypeaheadCategoryV2Processor in 531159 ms (9 mins)
+TypeaheadClassificationProcessor in 4807252 ms (1.5 hours)
+ClassificationCurationsProcessor in 15313 ms (1 min)
+"""
+print(123582+1960+171511+49487)
+print(123582+46751+171511+202)
+print(123582+49487+202+185269)
+
+
+import pyspark.sql.functions as F
+from pyspark.sql.types import *
+
+path = "hdfs://bigred3ns/user/Z0019Z3/search/typeahead/curated_ta_dictionary_classify"
+file = "part-00000-db051c65-41fe-482d-94c0-ed97a325457c-c000.csv"
+hdfs = f"{path}/{file}"
+
+df = spark.read.option("sep", "\t").option("header", False).csv(hdfs)
+dfCombined = df.filter(df._c5 == 'combined')
+
+dfCombined.sort("_c5").show()

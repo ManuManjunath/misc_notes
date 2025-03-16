@@ -1,0 +1,14 @@
+Types of components:
+1) Stateless functional components
+    * Cannot hold its own private data
+2) Stateful class components
+    * Can hold its own private data
+
+Shortcuts:
+rce + tab --> New class component
+rconst + tab --> Class constructor
+met + tab --> Method inside a class
+rfce + tab --> New funcational component
+
+material-ui
+npm install @material-ui/core

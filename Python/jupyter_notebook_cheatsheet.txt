@@ -1,0 +1,67 @@
+Run a cell and select the next cell -
+Shift + enter
+
+Run a cell and stay in the same cell -
+Ctrl + enter
+
+Auto complete -
+tab
+
+To get details about a function -
+Cursor on the function and (Shift + tab)
+
+To run shell commands from notebook -
+Start with "!"
+Example - 
+  !pwd
+
+You can also use the output of a shell command in a Python variable.
+Example -
+  files = !ls
+Notice the "!" before "ls"
+  print(files)
+This will show the files in the current working directory in a Python List.
+
+Alternatively, you can pass Python variables to the Shell commands.
+Example -
+  simple_text = "For testing"
+  !echo {simple_text} > new_text.txt
+Notice how the Python variables are passed in "{}"
+
+To split the current cell to 2 cells (At the cursor)
+control + shift + minus
+
+To merge cells -
+Select required cells in command mode and (shift + M)
+
+To get the doc string, run by appending "?".
+Example -
+  import pandas
+  pandas?
+
+Magic commands
+To view all magic commands -
+  %lsmagic
+
+To write the contents of a cell to a file -
+  %%writefile new.py
+  import random
+  print(random.randint(0,10))
+This will write the above text to new.py file.
+Use "%%writefile -a" to append to an existing file  
+
+To view more details about the different magic commands, use "?".
+Example -
+  %history?
+
+Markdowns
+  Simple **bold** 
+  # Header 1
+  ## Header 2
+  ### Header 3
+  #### Header 4
+  ##### Header 5
+  ###### Header 6
+  ```code line```
+  ![](image.jpg)
+
