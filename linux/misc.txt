@@ -1,0 +1,58 @@
+# About your system: 
+$ uname -a
+
+# To view your login shell:
+cat /etc/passwd | grep loginID
+# To change login shell:
+/etc/passwd
+
+set - to check local shell variables
+env - to check global environment variables
+
+# to create a link - (s - soft link, f - Force create - in case link already exists)
+$ ln -sf /filename linkname
+
+
+
+# To combine lines in a file
+$ cat sample.txt
+a1 = 10
+a2 = 14
+a3 = 13
+b1 = 6
+b2 = 8
+b3 = 7
+$ cat sample.txt | paste -sd ',,\n'
+a1 = 10,a2 = 14,a3 = 13
+b1 = 6,b2 = 8,b3 = 7
+$ cat sample.txt | paste -sd ',\n'
+a1 = 10,a2 = 14
+a3 = 13,b1 = 6
+b2 = 8,b3 = 7
+
+# To rename all ".log" files to ".script" files:
+for x in *.log;
+do
+mv "$x" "${x%.log}.script"
+done
+
+# To rename "XXX" to "YYY" in all file names:
+$ rename XXX YYY *
+
+# Top 15 largest files in a directory
+$ find /var -xdev -type f -ls | sort -nrk7 | head -15
+
+# Windows to Linux EOL
+$ dos2unix -k -o wfmmwbpd.ksh
+
+# To zip up pstacks from logs
+$ find -name *.tar | xargs tar zcvf ./project_date.tar.gz
+
+sftp user@server	
+Enter password	
+get /path/file /copy/here	
+	
+Streams:	
+Standard in (<)	stdin - file descriptor 0
+Standard out (>)	stdout - file descriptor 1
+Standard error (>)	stderr - file descriptor 2
