@@ -1,0 +1,2 @@
+Test file opens when you push any change to the master branch of this repo.
+If you see this message, the build has worked.

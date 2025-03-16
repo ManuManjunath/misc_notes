@@ -1,0 +1,107 @@
+
+//repositories {
+//    mavenCentral()
+//}
+
+// Sample plugin
+plugins {
+    id 'java'
+    id "org.flywaydb.flyway" version "6.3.2"
+    // Try running "gradle tasks" to see the newly available flyway related tasks
+
+    id 'application' // application plugin extends the "java" plugin
+    // Adds additional "run" task to run this as an application. Needs mainClassName
+
+    // id 'org.jetbrains.kotlin.jvm' version '1.3.31' --> Use this for Kotlin projects
+}
+
+// Java specific block
+java {
+    // To change version
+    // sourceCompatibility = JavaVersion.VERSION_1_8
+    // targetCompatibility = JavaVersion.VERSION_1_8
+
+    // To publish the project with the javadocs and sources jar:
+    // withJavadocJar()
+    // withSourcesJar()
+}
+
+// If you're building a Kotlin project, have kotlin block:
+//kotlin {
+
+//}
+
+repositories {
+    // To specify local filesystem repository:
+    // flatDir { dirs 'lib' }
+
+    // Common maven repository
+    mavenCentral()
+
+    // To specify custom company repository:
+    // maven { url "https://binrepo.target.com/artifactory/digital-search-libs-snapshot-local" }
+}
+
+dependencies {
+    // Needed for Kotlin projects
+    // implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    // You can also reference the version specified in gradle.properties
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit_jupiter_version}"
+
+    // File system dependencies
+    // implementation files ('lib/log4j-1.2.8.jar', 'lib/jaxb-api-2.3.1.jar')
+    // Use repositories section instead to specify the location
+
+    // Using repositories:
+    implementation 'log4j:log4j:1.2.8' // Notice the difference when compared to adding dependency without repositories section.
+    // Another way:
+    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: "2.3.1"
+}
+
+
+mainClassName = 'learning.Hello'
+// This (along with the "application" plugin) allows you to execute "gradle run" and it executes the above class
+
+// Generate java docs
+
+// Adding version info
+version = "1.0-SNAPSHOT"
+// When you do a gradle build, the jar file  it creates will have version information as well.
+// Validate jar file name in build/libs
+
+// Another way:
+// apply plugin: 'java'
+
+
+// Sample task
+task 'hello' {
+    println "Hello from Gradle"
+}
+
+// Subtasks
+task 'sample' {
+    doFirst {
+        println "First"
+    }
+
+    doLast {
+        println "Last"
+    }
+}
+
+// Adding dependents
+task 'parent' {
+    doLast {
+        println "Parent task should run first"
+    }
+}
+task 'child' {
+    dependsOn 'parent'
+    doLast {
+        println "Child process runs later"
+    }
+}
+// Now try running "gradle child" to ensure the parent also gets called
+
