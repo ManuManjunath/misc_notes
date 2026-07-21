@@ -39,3 +39,8 @@ Return ONLY valid JSON in exactly this format:
 }}
 Do not include markdown, code fences, headings, or any text outside the JSON object.
 """
+
+
+"""
+{'risk': 'HIGH', 'confidence': 90, 'pitch strategy': 'The client operates in a dynamic industry with significant growth potential, as evidenced by strong revenue and asset growth. However, the extremely high and volatile liability growth, coupled with very high utilization rates consistently above 90% for CAT1, indicates financial stress and elevated credit risk. The requested loan amount is reasonable relative to assets but disproportionately high compared to revenue, which is highly volatile. We recommend discussing with the client the need to stabilize liabilities and improve borrowing capacity management to ensure sustainable growth and reduce financial risk.'}
+"""
