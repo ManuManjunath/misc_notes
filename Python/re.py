@@ -1,142 +1,266 @@
-import re
-import fitz
 import pandas as pd
-
-####################################################
-# Read PDF
-####################################################
-
-def extract_text(pdf_path):
-    doc = fitz.open(pdf_path)
-
-    text = ""
-
-    for page in doc:
-        text += page.get_text()
-
-    return text
+import numpy as np
 
 
-####################################################
-# Extract values
-####################################################
+def calculate_credit_metrics(df: pd.DataFrame, requested_loan: float):
+    """
+    Expected columns:
+        Revenue
+        Assets
+        Liabilities
+        Contingents
+        Limit
+        Utilization
 
-def extract_details(text):
+    Utilization should be the actual utilized amount (not %).
+    """
 
-    company = re.search(
-        r'Company Name\s*:\s*(.*)',
-        text,
-        re.IGNORECASE
+    df = df.copy()
+
+    first = df.iloc[0]
+    latest = df.iloc[-1]
+
+    metrics = {}
+
+    # ---------------------------------------------------------
+    # Latest values
+    # ---------------------------------------------------------
+
+    metrics["requested_loan"] = requested_loan
+
+    metrics["latest_revenue"] = float(latest["Revenue"])
+    metrics["latest_assets"] = float(latest["Assets"])
+    metrics["latest_liabilities"] = float(latest["Liabilities"])
+    metrics["latest_contingents"] = float(latest["Contingents"])
+    metrics["latest_limit"] = float(latest["Limit"])
+    metrics["latest_utilized"] = float(latest["Utilization"])
+
+    # ---------------------------------------------------------
+    # Growth over 12 months
+    # ---------------------------------------------------------
+
+    def growth(start, end):
+        if start == 0:
+            return 0
+        return ((end - start) / start) * 100
+
+    metrics["revenue_growth_pct"] = growth(
+        first["Revenue"],
+        latest["Revenue"]
     )
 
-    facility = re.search(
-        r'Requested Facility\s*:\s*(.*)',
-        text,
-        re.IGNORECASE
+    metrics["asset_growth_pct"] = growth(
+        first["Assets"],
+        latest["Assets"]
     )
 
-    amount = re.search(
-        r'Additional Amount Requested\s*:\s*INR\s*([\d,]+)',
-        text,
-        re.IGNORECASE
+    metrics["liability_growth_pct"] = growth(
+        first["Liabilities"],
+        latest["Liabilities"]
     )
 
-    return {
-        "CompanyName": company.group(1).strip(),
-        "LimitCategory": facility.group(1).strip(),
-        "RequestedAmount": int(amount.group(1).replace(",", ""))
-    }
+    metrics["contingent_growth_pct"] = growth(
+        first["Contingents"],
+        latest["Contingents"]
+    )
 
+    # ---------------------------------------------------------
+    # Utilization %
+    # ---------------------------------------------------------
 
-####################################################
-# Load datasets
-####################################################
+    df["UtilizationPct"] = (
+        df["Utilization"] / df["Limit"] * 100
+    )
 
-company_df = pd.read_excel("Dataset1.xlsx")
+    metrics["avg_utilization_pct"] = float(
+        df["UtilizationPct"].mean()
+    )
 
-limits_df = pd.read_excel("Dataset2.xlsx")
+    metrics["max_utilization_pct"] = float(
+        df["UtilizationPct"].max()
+    )
 
-####################################################
-# Read PDF
-####################################################
+    metrics["min_utilization_pct"] = float(
+        df["UtilizationPct"].min()
+    )
 
-pdf_text = extract_text("LoanRequest.pdf")
+    metrics["months_above_90_utilization"] = int(
+        (df["UtilizationPct"] > 90).sum()
+    )
 
-request = extract_details(pdf_text)
+    metrics["months_above_80_utilization"] = int(
+        (df["UtilizationPct"] > 80).sum()
+    )
 
-####################################################
-# Find company
-####################################################
+    # ---------------------------------------------------------
+    # Available limit
+    # ---------------------------------------------------------
 
-company = company_df[
-    company_df["CompanyName"] == request["CompanyName"]
-]
+    metrics["available_limit"] = (
+        latest["Limit"] - latest["Utilization"]
+    )
 
-if company.empty:
-    raise Exception("Company not found")
+    metrics["unused_limit_pct"] = (
+        metrics["available_limit"] /
+        latest["Limit"] * 100
+    )
 
-company_id = company.iloc[0]["CompanyID"]
+    # ---------------------------------------------------------
+    # Ratios
+    # ---------------------------------------------------------
 
-####################################################
-# Existing limit
-####################################################
+    metrics["debt_asset_ratio"] = (
+        latest["Liabilities"] /
+        latest["Assets"]
+    )
 
-existing = limits_df[
-    (limits_df["CompanyID"] == company_id) &
-    (limits_df["LimitCategory"] == request["LimitCategory"])
-]
+    metrics["contingent_asset_ratio"] = (
+        latest["Contingents"] /
+        latest["Assets"]
+    )
 
-if existing.empty:
-    raise Exception("Limit category not found")
+    metrics["request_to_assets_pct"] = (
+        requested_loan /
+        latest["Assets"] * 100
+    )
 
-existing = existing.iloc[0]
+    metrics["request_to_revenue_pct"] = (
+        requested_loan /
+        latest["Revenue"] * 100
+    )
 
-####################################################
-# Risk calculations
-####################################################
+    metrics["request_to_limit_pct"] = (
+        requested_loan /
+        latest["Limit"] * 100
+    )
 
-sanctioned = existing["SanctionedLimit"]
+    metrics["request_to_available_limit_pct"] = (
+        requested_loan /
+        metrics["available_limit"] * 100
+        if metrics["available_limit"] > 0
+        else 999
+    )
 
-outstanding = existing["Outstanding"]
+    # ---------------------------------------------------------
+    # Revenue Stability
+    # ---------------------------------------------------------
 
-requested = request["RequestedAmount"]
+    revenue_mean = df["Revenue"].mean()
+    revenue_std = df["Revenue"].std()
 
-current_utilization = outstanding / sanctioned
+    metrics["revenue_stddev"] = float(revenue_std)
 
-future_outstanding = outstanding + requested
+    metrics["revenue_cv_pct"] = (
+        revenue_std /
+        revenue_mean * 100
+        if revenue_mean != 0
+        else 0
+    )
 
-future_utilization = future_outstanding / sanctioned
+    # ---------------------------------------------------------
+    # Utilization Stability
+    # ---------------------------------------------------------
 
-available_limit = sanctioned - outstanding
+    util_mean = df["UtilizationPct"].mean()
+    util_std = df["UtilizationPct"].std()
 
-####################################################
-# Decision
-####################################################
+    metrics["utilization_stddev"] = float(util_std)
 
-if future_utilization > 1:
-    decision = "HIGH RISK - Exceeds sanctioned limit"
+    metrics["utilization_cv_pct"] = (
+        util_std /
+        util_mean * 100
+        if util_mean != 0
+        else 0
+    )
 
-elif future_utilization > 0.9:
-    decision = "MEDIUM RISK"
+    # ---------------------------------------------------------
+    # Asset Stability
+    # ---------------------------------------------------------
 
-else:
-    decision = "LOW RISK"
+    asset_mean = df["Assets"].mean()
+    asset_std = df["Assets"].std()
 
-####################################################
-# Output
-####################################################
+    metrics["asset_cv_pct"] = (
+        asset_std /
+        asset_mean * 100
+        if asset_mean != 0
+        else 0
+    )
 
-print("\n========== RESULT ==========\n")
+    # ---------------------------------------------------------
+    # Liability Stability
+    # ---------------------------------------------------------
 
-print("Company :", request["CompanyName"])
-print("Facility :", request["LimitCategory"])
-print("Requested :", requested)
+    liability_mean = df["Liabilities"].mean()
+    liability_std = df["Liabilities"].std()
 
-print("\nCurrent Outstanding :", outstanding)
-print("Sanctioned Limit :", sanctioned)
-print("Available :", available_limit)
+    metrics["liability_cv_pct"] = (
+        liability_std /
+        liability_mean * 100
+        if liability_mean != 0
+        else 0
+    )
 
-print("\nCurrent Utilization : {:.2%}".format(current_utilization))
-print("Future Utilization : {:.2%}".format(future_utilization))
+    # ---------------------------------------------------------
+    # Monthly Trends
+    # ---------------------------------------------------------
 
-print("\nDecision :", decision)
+    metrics["avg_monthly_revenue_growth_pct"] = float(
+        df["Revenue"].pct_change().mean() * 100
+    )
+
+    metrics["avg_monthly_asset_growth_pct"] = float(
+        df["Assets"].pct_change().mean() * 100
+    )
+
+    metrics["avg_monthly_liability_growth_pct"] = float(
+        df["Liabilities"].pct_change().mean() * 100
+    )
+
+    # ---------------------------------------------------------
+    # Worst Month
+    # ---------------------------------------------------------
+
+    metrics["largest_monthly_revenue_drop_pct"] = abs(
+        min(df["Revenue"].pct_change().fillna(0))
+    ) * 100
+
+    metrics["largest_monthly_liability_jump_pct"] = max(
+        df["Liabilities"].pct_change().fillna(0)
+    ) * 100
+
+    # ---------------------------------------------------------
+    # Simple Trend Labels
+    # ---------------------------------------------------------
+
+    def trend_label(growth_pct):
+        if growth_pct > 10:
+            return "Increasing"
+        elif growth_pct < -10:
+            return "Decreasing"
+        return "Stable"
+
+    metrics["revenue_trend"] = trend_label(
+        metrics["revenue_growth_pct"]
+    )
+
+    metrics["asset_trend"] = trend_label(
+        metrics["asset_growth_pct"]
+    )
+
+    metrics["liability_trend"] = trend_label(
+        metrics["liability_growth_pct"]
+    )
+
+    metrics["contingent_trend"] = trend_label(
+        metrics["contingent_growth_pct"]
+    )
+
+    metrics["utilization_trend"] = trend_label(
+        growth(
+            df.iloc[0]["UtilizationPct"],
+            df.iloc[-1]["UtilizationPct"]
+        )
+    )
+
+    return metrics
