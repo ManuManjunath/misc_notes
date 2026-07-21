@@ -35,9 +35,7 @@ Return ONLY valid JSON in exactly this format:
 {{
     "risk": "LOW" | "MEDIUM" | "HIGH",
     "confidence": 0-100,
-    "recommendation": "APPROVE" | "REVIEW" | "DECLINE",
-    "pitch strategy: "Maximum 3 concise sentences with explanation"
-    "reason": "Maximum two concise sentences explaining the recommendation."
+    "pitch strategy: "4-5 concise sentences including Global information on Industry, which can make the convcersation relevant. Clear plan to the client on the important info that needs to be re-informed."
 }}
 Do not include markdown, code fences, headings, or any text outside the JSON object.
 """
